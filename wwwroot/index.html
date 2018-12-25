@@ -3,7 +3,11 @@
 <head>
 <script> var __basePath = ''; </script>
 <style> html, body { margin: 0; padding: 0; height: 100%; } </style>
-    <script src="https://unpkg.com/ag-grid-enterprise@17.0.0/dist/ag-grid-enterprise.min.js"></script>    
+    <script src="https://unpkg.com/ag-grid-community@19.1.4/dist/ag-grid-community.min.js"></script>  
+    <script src="https://unpkg.com/mathjs@5.4.0/dist/math.min.js"></script>  
+    <script src="https://unpkg.com/redux/dist/redux.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/immutable/4.0.0-rc.12/immutable.js"></script>
+    <script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,22 +18,13 @@
 
 <div style="position: absolute; top: 0px; left: 0px;">
     <div style="padding: 2px;">
-        <span>Test:</span>
+        <span>monitor nos:</span>
+        <input id="monitornos" type="text" />
 
-        <button onclick="onStartStress()">&#9658; Stress</button>
         <button onclick="onStartLoad()">&#9658; Load</button>
+        <button onclick="deleteMessage()">&#9658; delete</button>
         <button onclick="onStopMessages()">&#9632; Stop</button>
-
-        <span style="padding-left: 6px;">Columns:</span>
-
-        <button onclick="onColumnsFlat()">Flat</button>
-        <button onclick="onColumnsGroup()">Group</button>
-        <button onclick="onColumnsPivot()">Pivot</button>
-
-        <span style="padding-left: 6px;">Tool Panel:</span>
-
-        <button onclick="onShowToolPanel()">Show</button>
-        <button onclick="onHideToolPanel()">Hide</button>
+        
     </div>
 
     <div style="padding: 2px; margin: 4px;">

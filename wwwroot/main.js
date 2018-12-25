@@ -1,42 +1,50 @@
 var columnDefs = [
-        // these are the row groups, so they are all hidden (they are showd in the group column)
-        {headerName: 'Hierarchy', children: [
-            {headerName: 'Product', field: 'product', type: 'dimension', rowGroupIndex: 0, hide: true},
-            {headerName: 'Portfolio', field: 'portfolio', type: 'dimension', rowGroupIndex: 1, hide: true},
-            {headerName: 'Book', field: 'book', type: 'dimension', rowGroupIndex: 2, hide: true}
-        ]},
-
-        // some string values, that do not get aggregated
-        {headerName: 'Attributes', children: [
-                {headerName: 'Trade', field: 'trade', width: 100},
-                {headerName: 'Deal Type', field: 'dealType', type: 'dimension'},
-                {headerName: 'Bid', field: 'bidFlag', type: 'dimension', width: 100}
-        ]},
-
-        // all the other columns (visible and not grouped)
-        {headerName: 'Values', children: [
-                {headerName: 'Current', field: 'current', type: 'measure'},
-                {headerName: 'Previous', field: 'previous', type: 'measure'},
-                {headerName: 'PL 1', field: 'pl1', type: 'measure'},
-                {headerName: 'PL 2', field: 'pl2', type: 'measure'},
-                {headerName: 'Gain-DX', field: 'gainDx', type: 'measure'},
-                {headerName: 'SX / PX', field: 'sxPx', type: 'measure'},
-                {headerName: '99 Out', field: '_99Out', type: 'measure'},
-                {headerName: 'Submitter ID', field: 'submitterID', type: 'measure'},
-                {headerName: 'Submitted Deal ID', field: 'submitterDealID', type: 'measure'}
-        ]}
+    {headerName: 'MonitorNo', field: 'MonitorNo', type: 'dimension'},
+    {headerName: 'ActionKey', field: 'ActionKey', type: 'dimension'},
+    {headerName: 'AvailFund', field: 'AvailFund', type: 'measure'},
+    {headerName: 'Clientmode', field: 'Clientmode', type: 'dimension'},
+    {headerName: 'CurrencyCode', field: 'CurrencyCode', type: 'dimension'},
+    {headerName: 'CustClass', field: 'CustClass', type: 'dimension'},
+    {headerName: 'CustName', field: 'CustName', type: 'dimension'},
+    {headerName: 'CustNo', field: 'CustNo', type: 'dimension'},
+    {headerName: 'DropProfit', field: 'DropProfit', type: 'measure'},
+    {headerName: 'DynCapRight', field: 'DynCapRight', type: 'measure'},
+    {headerName: 'DynRatio', field: 'DynRatio', type: 'measure'},
+    {headerName: 'DynRights', field: 'DynRights', type: 'measure'},
+    {headerName: 'ExchFrznMargin', field: 'ExchFrznMargin', type: 'measure'},
+    {headerName: 'ExchMargin', field: 'ExchMargin', type: 'measure'},
+    {headerName: 'ExchOptionDynMargin', field: 'ExchOptionDynMargin', type: 'measure'},
+    {headerName: 'ExchOptionNowMargin', field: 'ExchOptionNowMargin', type: 'measure'},
+    {headerName: 'FrznMargin', field: 'FrznMargin', type: 'measure'},
+    {headerName: 'FrznRoyalty', field: 'FrznRoyalty', type: 'measure'},
+    {headerName: 'FrznStrikeMargin', field: 'FrznStrikeMargin', type: 'measure'},
+    {headerName: 'HoldProfit', field: 'HoldProfit', type: 'measure'},
+    {headerName: 'LastRiskLevel', field: 'LastRiskLevel', type: 'dimension'},
+    {headerName: 'Margin', field: 'Margin', type: 'measure'},
+    {headerName: 'MobilePhone', field: 'MobilePhone', type: 'dimension'},    
+    {headerName: 'OptionCap', field: 'OptionCap', type: 'measure'},
+    {headerName: 'OptionDynMargin', field: 'OptionDynMargin', type: 'measure'},
+    {headerName: 'OptionNowMargin', field: 'OptionNowMargin', type: 'measure'},
+    {headerName: 'PackFlag', field: 'PackFlag', type: 'dimension'},
+    {headerName: 'RiskContractQty', field: 'RiskContractQty', type: 'measure'},
+    {headerName: 'RiskDegree0', field: 'RiskDegree0', type: 'measure'},
+    {headerName: 'RiskDegree1', field: 'RiskDegree1', type: 'measure'},
+    {headerName: 'RiskDegree2', field: 'RiskDegree2', type: 'measure'},
+    {headerName: 'RiskDegree3', field: 'RiskDegree3', type: 'measure'},
+    {headerName: 'RiskLevel', field: 'RiskLevel', type: 'dimension'},
+    {headerName: 'RoyaltyInout', field: 'RoyaltyInout', type: 'measure'},
+    {headerName: 'TodayInout', field: 'TodayInout', type: 'measure'},
+    {headerName: 'TradingNo', field: 'TradingNo', type: 'dimension'}
     ];
 
 function numberCellFormatter(params) {
-    return Math.floor(params.value).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+    return math.round(params.value,2);
 }
 
 var gridOptions = {
+    deltaRowDataMode: true,
+    rowData: [],
     columnTypes: {
-        dimension: {
-            enableRowGroup: true,
-            enablePivot: true,
-        },
         measure: {
             width: 150,
             aggFunc: 'sum',
@@ -55,114 +63,101 @@ var gridOptions = {
     rowGroupPanelShow: 'always',
     pivotPanelShow: 'always',
     suppressAggFuncInHeader: true,
-    getRowNodeId: function(data) { return data.trade; },
+    getRowNodeId: function(data) { return data.ActionKey; },
     defaultColDef: {
         width: 120
     },
     onGridReady: function(params) {
-        // gridOptions.api.sizeColumnsToFit();
+        
     }
 };
 
-function onStartStress() {
-    worker.postMessage('startStress');
+// reducer
+function deliver(state = Immutable.Map(), action) {
+    switch (action.type) {
+      case 'UPDATE':
+        return state.withMutations(map => {
+            map.merge(action.payload.update).deleteAll(action.payload.delete)
+        })
+      default:
+        return state
+    }
+  }
+
+  let store = Redux.createStore(deliver)
+  store.subscribe(() => {
+      let values = store.getState().valueSeq().toArray();
+      document.querySelector('#eMessage').innerHTML = "total: " + values.length
+
+      gridOptions.api.setRowData(values)
+    })
+
+
+const { webSocket } = rxjs.webSocket;
+const { map, filter, bufferTime,groupBy, mergeMap, reduce } = rxjs.operators;
+var ws = webSocket("ws://127.0.0.1:8443/signalr");
+var stream = ws.pipe(
+    bufferTime(200),
+    filter(m=> m.length>0),
+    // groupBy(person => person.ActionFlag),
+    // mergeMap( (group$) => group$.pipe(reduce((acc, cur) => [...acc, cur], ["" + group$.key]))),
+    // map(arr => {
+    //     if (arr[0] == 2) {
+    //     return {"delete": arr.slice(1).map(x=>x.ActionKey)}
+    //     } else {
+    //     return {'update': arr.slice(1).map(x=>[x.ActionKey, x])}
+    //     }
+    // }),
+  // reduce((acc, cur) => acc.set(cur[0], cur[1]) ,new Map())
+);
+
+stream.subscribe(res => {
+    updateGrid(res)
+  });
+
+
+function updateGrid(datas) {
+    var del = []
+    var update = []
+    datas.forEach(e => {
+        // if (e.ActionFlag == 2){
+        //     del.push(e.ActionKey)
+        // } else {
+        //     update.push([e.ActionKey, e])
+        // }
+        update.push([e.ActionKey, e])
+    })
+
+    store.dispatch({
+        type: 'UPDATE',
+        payload: {
+            update : Immutable.Map(update),
+            delete : del
+        }
+      });
 }
+
 
 function onStartLoad() {
-    worker.postMessage('startLoad');
+    var no = document.querySelector("#monitornos").value.split(",");
+    ws.next(no)
+
+    // store.dispatch({
+    //     type: 'UPDATE',
+    //     payload: {
+    //         update : Immutable.Map(
+    //             [
+    //                 ["0#15#1",{"ActionFlag":2,"ActionKey":"0#15#1","AvailFund":5.135749435014118,"Clientmode":"Clientmode","CurrencyCode":"0","CustClass":"CustClass","CustName":"CustName","CustNo":"0","DropProfit":5.135749435014118,"DynCapRight":5.135749435014118,"DynRatio":5.135749435014118,"DynRights":5.135749435014118,"ExchFrznMargin":5.135749435014118,"ExchMargin":5.135749435014118,"ExchOptionDynMargin":5.135749435014118,"ExchOptionNowMargin":5.135749435014118,"FrznMargin":5.135749435014118,"FrznRoyalty":5.135749435014118,"FrznStrikeMargin":5.135749435014118,"HoldProfit":5.135749435014118,"LastRemain":5.135749435014118,"LastRiskLevel":"LastRiskLevel","Margin":5.135749435014118,"MobilePhone":"MobilePhone","MonitorNo":"0","OptionCap":5.135749435014118,"OptionDynMargin":5.135749435014118,"OptionNowMargin":5.135749435014118,"PackFlag":0,"RiskContractQty":32,"RiskDegree0":5.135749435014118,"RiskDegree1":5.135749435014118,"RiskDegree2":5.135749435014118,"RiskDegree3":5.135749435014118,"RiskLevel":"RiskLevel","RoyaltyInout":5.135749435014118,"TodayInout":5.135749435014118,"TradingNo":"TradingNo","XXX_NoUnkeyedLiteral":{},"XXX_sizecache":0,"XXX_unrecognized":""}],
+    //                 ["0#15#0",{"ActionFlag":2,"ActionKey":"0#15#0","AvailFund":6.7643950788064,"Clientmode":"Clientmode","CurrencyCode":"0","CustClass":"CustClass","CustName":"CustName","CustNo":"15","DropProfit":6.7643950788064,"DynCapRight":6.7643950788064,"DynRatio":6.7643950788064,"DynRights":6.7643950788064,"ExchFrznMargin":6.7643950788064,"ExchMargin":6.7643950788064,"ExchOptionDynMargin":6.7643950788064,"ExchOptionNowMargin":6.7643950788064,"FrznMargin":6.7643950788064,"FrznRoyalty":6.7643950788064,"FrznStrikeMargin":6.7643950788064,"HoldProfit":6.7643950788064,"LastRemain":6.7643950788064,"LastRiskLevel":"LastRiskLevel","Margin":6.7643950788064,"MobilePhone":"MobilePhone","MonitorNo":"0","OptionCap":6.7643950788064,"OptionDynMargin":6.7643950788064,"OptionNowMargin":6.7643950788064,"PackFlag":0,"RiskContractQty":15,"RiskDegree0":6.7643950788064,"RiskDegree1":6.7643950788064,"RiskDegree2":6.7643950788064,"RiskDegree3":6.7643950788064,"RiskLevel":"RiskLevel","RoyaltyInout":6.7643950788064,"TodayInout":6.7643950788064,"TradingNo":"TradingNo","XXX_NoUnkeyedLiteral":{},"XXX_sizecache":0,"XXX_unrecognized":""}]
+    //             ]),
+    //         delete : ["0#15#0"]
+    //     }
+    //   });
 }
 
-function onStopMessages() {
-    worker.postMessage('stop');
-    logMessage('Test stopped');
-    console.log('Test stopped');
-}
-
-function onShowToolPanel() {
-    gridOptions.api.showToolPanel(true);
-}
-
-function onHideToolPanel() {
-    gridOptions.api.showToolPanel(false);
-}
-
-function onColumnsGroup() {
-    gridOptions.columnApi.setPivotMode(false);
-    gridOptions.columnApi.setColumnState([{"colId":"product","hide":true,"width":120,"rowGroupIndex":0},{"colId":"portfolio","hide":true,"width":120,"rowGroupIndex":1},{"colId":"book","hide":true,"width":120,"rowGroupIndex":2},{"colId":"trade","width":100},{"colId":"dealType","width":120},{"colId":"bidFlag","width":100},{"colId":"current","aggFunc":"sum","width":150},{"colId":"previous","aggFunc":"sum","width":150},{"colId":"pl1","aggFunc":"sum","width":150},{"colId":"pl2","aggFunc":"sum","width":150},{"colId":"gainDx","aggFunc":"sum","width":150},{"colId":"sxPx","aggFunc":"sum","width":150},{"colId":"_99Out","aggFunc":"sum","width":150},{"colId":"submitterID","aggFunc":"sum","width":150},{"colId":"submitterDealID","aggFunc":"sum","width":150}]);
-}
-
-function onColumnsPivot() {
-    gridOptions.columnApi.setPivotMode(true);
-    gridOptions.columnApi.setColumnState([{"colId":"product","hide":true,"width":120,"rowGroupIndex":0},{"colId":"portfolio","width":120,"pivotIndex":0},{"colId":"book","hide":true,"width":120,"rowGroupIndex":1},{"colId":"trade","width":100},{"colId":"dealType","width":120},{"colId":"bidFlag","width":100},{"colId":"current","aggFunc":"sum","width":150},{"colId":"previous","aggFunc":"sum","width":150},{"colId":"pl1","width":150},{"colId":"pl2","width":150},{"colId":"gainDx","width":150},{"colId":"sxPx","width":150},{"colId":"_99Out","width":150},{"colId":"submitterID","width":150},{"colId":"submitterDealID","width":150}]);
-}
-
-function onColumnsFlat() {
-    gridOptions.columnApi.setPivotMode(false);
-    gridOptions.columnApi.setColumnState([{"colId": "product", "width": 120}, {"colId": "portfolio", "width": 120}, {"colId": "book", "width": 120}, {"colId": "trade", "width": 100}, {"colId": "dealType", "width": 120}, {"colId": "bidFlag", "width": 100}, {"colId": "current", "width": 150}, {"colId": "previous", "width": 150}, {"colId": "pl1", "width": 150}, {"colId": "pl2", "width": 150}, {"colId": "gainDx", "width": 150}, {"colId": "sxPx", "width": 150}, {"colId": "_99Out", "width": 150}, {"colId": "submitterID", "width": 150}, {"colId": "submitterDealID", "width": 150}]);
-}
-
-var testStartTime;
-var worker;
-
-function startWorker() {
-
-    worker = new Worker(__basePath + 'worker.js');
-
-    worker.onmessage = function(e) {
-        switch (e.data.type) {
-            case 'start':
-                testStartTime = new Date().getTime();
-                logTestStart(e.data.messageCount, e.data.updateCount, e.data.interval);
-                break;
-            case 'end':
-                logStressResults(e.data.messageCount, e.data.updateCount);
-                break;
-            case 'setRowData':
-                gridOptions.api.setRowData(e.data.records);
-                break;
-            case 'updateData':
-                gridOptions.api.batchUpdateRowData({update: e.data.records});
-                break;
-            default:
-                console.log('unrecognised event type ' + e.type);
-        }
-    };
-}
-
-function logTestStart(messageCount, updateCount, interval) {
-    let message = messageCount ?
-        'Sending '+messageCount+' messages at once with '+updateCount+' record updates each.' :
-        'Sending 1 message with '+updateCount+' updates every '+interval+' milliseconds, that\'s ' +(1000/interval*updateCount).toLocaleString()+ ' updates per second.';
-
-    console.log(message);
-    logMessage(message);
-}
-
-function logStressResults(messageCount, updateCount) {
-
-    var testEndTime = new Date().getTime();
-    var duration = testEndTime - testStartTime;
-    var totalUpdates = messageCount * updateCount;
-
-    var updatesPerSecond = Math.floor((totalUpdates / duration) * 1000);
-
-    logMessage('Processed ' + totalUpdates.toLocaleString() + ' updates in ' + duration.toLocaleString() + 'ms, that\'s ' + updatesPerSecond.toLocaleString() + ' updates per second.')
-
-    console.log('####################')
-    console.log('# -- Stress test results --')
-    console.log('# The grid was pumped with ' + messageCount.toLocaleString() + ' messages. Each message had ' + updateCount.toLocaleString() + ' record updates which gives a total number of updates of ' + totalUpdates.toLocaleString() + '.');
-    console.log('# Time taken to execute the test was ' + duration.toLocaleString() + ' milliseconds which gives ' + updatesPerSecond.toLocaleString() + ' updates per second.');
-    console.log('####################')
-}
-
-function logMessage(message) {
-    document.querySelector('#eMessage').innerHTML = message;
-}
 
 // after page is loaded, create the grid.
 document.addEventListener("DOMContentLoaded", function() {
     var eGridDiv = document.querySelector('#myGrid');
     new agGrid.Grid(eGridDiv, gridOptions);
-    startWorker();
-    onStartLoad();
 });
