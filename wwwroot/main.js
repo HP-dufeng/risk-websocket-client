@@ -95,7 +95,7 @@ function deliver(state = Immutable.Map(), action) {
 
 const { webSocket } = rxjs.webSocket;
 const { map, filter, bufferTime,groupBy, mergeMap, reduce } = rxjs.operators;
-var ws = webSocket("ws://127.0.0.1:8443/signalr");
+var ws = webSocket("ws://risk-websocket-server-rma-7x24.apps.dev-cefcfco.com/signalr");
 var stream = ws.pipe(
     bufferTime(200),
     filter(m=> m.length>0),
@@ -135,6 +135,8 @@ function updateGrid(datas) {
             delete : del
         }
       });
+    
+      document.querySelector('#eMessageForUpdated').innerHTML = "updated: " + update.length
 }
 
 
@@ -160,4 +162,6 @@ function onStartLoad() {
 document.addEventListener("DOMContentLoaded", function() {
     var eGridDiv = document.querySelector('#myGrid');
     new agGrid.Grid(eGridDiv, gridOptions);
+
+    document.querySelector("#monitornos").value = "0,1,2,3,4,5,6,7,8,9"
 });
