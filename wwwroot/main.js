@@ -73,6 +73,19 @@ var gridOptions = {
 };
 
 // reducer
+/**  Exp : 
+ * action = {
+     type: 'UPDATE',
+     payload: {
+         update : Immutable.Map(
+             [
+                 ["0#15#1",{"ActionFlag":2,"ActionKey":"0#15#1","AvailFund":5.135749435014118,"Clientmode":"Clientmode","CurrencyCode":"0","CustClass":"CustClass","CustName":"CustName","CustNo":"0","DropProfit":5.135749435014118,"DynCapRight":5.135749435014118,"DynRatio":5.135749435014118,"DynRights":5.135749435014118,"ExchFrznMargin":5.135749435014118,"ExchMargin":5.135749435014118,"ExchOptionDynMargin":5.135749435014118,"ExchOptionNowMargin":5.135749435014118,"FrznMargin":5.135749435014118,"FrznRoyalty":5.135749435014118,"FrznStrikeMargin":5.135749435014118,"HoldProfit":5.135749435014118,"LastRemain":5.135749435014118,"LastRiskLevel":"LastRiskLevel","Margin":5.135749435014118,"MobilePhone":"MobilePhone","MonitorNo":"0","OptionCap":5.135749435014118,"OptionDynMargin":5.135749435014118,"OptionNowMargin":5.135749435014118,"PackFlag":0,"RiskContractQty":32,"RiskDegree0":5.135749435014118,"RiskDegree1":5.135749435014118,"RiskDegree2":5.135749435014118,"RiskDegree3":5.135749435014118,"RiskLevel":"RiskLevel","RoyaltyInout":5.135749435014118,"TodayInout":5.135749435014118,"TradingNo":"TradingNo","XXX_NoUnkeyedLiteral":{},"XXX_sizecache":0,"XXX_unrecognized":""}],
+                 ["0#15#0",{"ActionFlag":2,"ActionKey":"0#15#0","AvailFund":6.7643950788064,"Clientmode":"Clientmode","CurrencyCode":"0","CustClass":"CustClass","CustName":"CustName","CustNo":"15","DropProfit":6.7643950788064,"DynCapRight":6.7643950788064,"DynRatio":6.7643950788064,"DynRights":6.7643950788064,"ExchFrznMargin":6.7643950788064,"ExchMargin":6.7643950788064,"ExchOptionDynMargin":6.7643950788064,"ExchOptionNowMargin":6.7643950788064,"FrznMargin":6.7643950788064,"FrznRoyalty":6.7643950788064,"FrznStrikeMargin":6.7643950788064,"HoldProfit":6.7643950788064,"LastRemain":6.7643950788064,"LastRiskLevel":"LastRiskLevel","Margin":6.7643950788064,"MobilePhone":"MobilePhone","MonitorNo":"0","OptionCap":6.7643950788064,"OptionDynMargin":6.7643950788064,"OptionNowMargin":6.7643950788064,"PackFlag":0,"RiskContractQty":15,"RiskDegree0":6.7643950788064,"RiskDegree1":6.7643950788064,"RiskDegree2":6.7643950788064,"RiskDegree3":6.7643950788064,"RiskLevel":"RiskLevel","RoyaltyInout":6.7643950788064,"TodayInout":6.7643950788064,"TradingNo":"TradingNo","XXX_NoUnkeyedLiteral":{},"XXX_sizecache":0,"XXX_unrecognized":""}]
+             ]),
+         delete : ["0#15#0"]
+     }
+   };
+*/
 function deliver(state = Immutable.Map(), action) {
     switch (action.type) {
       case 'UPDATE':
@@ -95,37 +108,17 @@ function deliver(state = Immutable.Map(), action) {
 
 const { webSocket } = rxjs.webSocket;
 const { map, filter, bufferTime,groupBy, mergeMap, reduce } = rxjs.operators;
-var ws = webSocket("ws://risk-websocket-server-rma-7x24.apps.dev-cefcfco.com/signalr");
-var stream = ws.pipe(
-    bufferTime(200),
-    filter(m=> m.length>0),
-    // groupBy(person => person.ActionFlag),
-    // mergeMap( (group$) => group$.pipe(reduce((acc, cur) => [...acc, cur], ["" + group$.key]))),
-    // map(arr => {
-    //     if (arr[0] == 2) {
-    //     return {"delete": arr.slice(1).map(x=>x.ActionKey)}
-    //     } else {
-    //     return {'update': arr.slice(1).map(x=>[x.ActionKey, x])}
-    //     }
-    // }),
-  // reduce((acc, cur) => acc.set(cur[0], cur[1]) ,new Map())
-);
-
-stream.subscribe(res => {
-    updateGrid(res)
-  });
-
 
 function updateGrid(datas) {
     var del = []
     var update = []
     datas.forEach(e => {
-        // if (e.ActionFlag == 2){
-        //     del.push(e.ActionKey)
-        // } else {
-        //     update.push([e.ActionKey, e])
-        // }
-        update.push([e.ActionKey, e])
+        if (e.ActionFlag == 2){
+            del.push(e.ActionKey)
+        } else {
+            update.push([e.ActionKey, e])
+        }
+        // update.push([e.ActionKey, e])
     })
 
     store.dispatch({
@@ -136,27 +129,36 @@ function updateGrid(datas) {
         }
       });
     
-      document.querySelector('#eMessageForUpdated').innerHTML = "updated: " + update.length
+      document.querySelector('#eMessageForUpdated').innerHTML = "updated: " + update.length + "\n" + "deleted: " + del.length;
 }
 
-
-function onStartLoad() {
+var subscribe;
+function onStartSubscribe() {
     var no = document.querySelector("#monitornos").value.split(",");
-    ws.next(no)
+    subscribe = newSubscribe();
 
-    // store.dispatch({
-    //     type: 'UPDATE',
-    //     payload: {
-    //         update : Immutable.Map(
-    //             [
-    //                 ["0#15#1",{"ActionFlag":2,"ActionKey":"0#15#1","AvailFund":5.135749435014118,"Clientmode":"Clientmode","CurrencyCode":"0","CustClass":"CustClass","CustName":"CustName","CustNo":"0","DropProfit":5.135749435014118,"DynCapRight":5.135749435014118,"DynRatio":5.135749435014118,"DynRights":5.135749435014118,"ExchFrznMargin":5.135749435014118,"ExchMargin":5.135749435014118,"ExchOptionDynMargin":5.135749435014118,"ExchOptionNowMargin":5.135749435014118,"FrznMargin":5.135749435014118,"FrznRoyalty":5.135749435014118,"FrznStrikeMargin":5.135749435014118,"HoldProfit":5.135749435014118,"LastRemain":5.135749435014118,"LastRiskLevel":"LastRiskLevel","Margin":5.135749435014118,"MobilePhone":"MobilePhone","MonitorNo":"0","OptionCap":5.135749435014118,"OptionDynMargin":5.135749435014118,"OptionNowMargin":5.135749435014118,"PackFlag":0,"RiskContractQty":32,"RiskDegree0":5.135749435014118,"RiskDegree1":5.135749435014118,"RiskDegree2":5.135749435014118,"RiskDegree3":5.135749435014118,"RiskLevel":"RiskLevel","RoyaltyInout":5.135749435014118,"TodayInout":5.135749435014118,"TradingNo":"TradingNo","XXX_NoUnkeyedLiteral":{},"XXX_sizecache":0,"XXX_unrecognized":""}],
-    //                 ["0#15#0",{"ActionFlag":2,"ActionKey":"0#15#0","AvailFund":6.7643950788064,"Clientmode":"Clientmode","CurrencyCode":"0","CustClass":"CustClass","CustName":"CustName","CustNo":"15","DropProfit":6.7643950788064,"DynCapRight":6.7643950788064,"DynRatio":6.7643950788064,"DynRights":6.7643950788064,"ExchFrznMargin":6.7643950788064,"ExchMargin":6.7643950788064,"ExchOptionDynMargin":6.7643950788064,"ExchOptionNowMargin":6.7643950788064,"FrznMargin":6.7643950788064,"FrznRoyalty":6.7643950788064,"FrznStrikeMargin":6.7643950788064,"HoldProfit":6.7643950788064,"LastRemain":6.7643950788064,"LastRiskLevel":"LastRiskLevel","Margin":6.7643950788064,"MobilePhone":"MobilePhone","MonitorNo":"0","OptionCap":6.7643950788064,"OptionDynMargin":6.7643950788064,"OptionNowMargin":6.7643950788064,"PackFlag":0,"RiskContractQty":15,"RiskDegree0":6.7643950788064,"RiskDegree1":6.7643950788064,"RiskDegree2":6.7643950788064,"RiskDegree3":6.7643950788064,"RiskLevel":"RiskLevel","RoyaltyInout":6.7643950788064,"TodayInout":6.7643950788064,"TradingNo":"TradingNo","XXX_NoUnkeyedLiteral":{},"XXX_sizecache":0,"XXX_unrecognized":""}]
-    //             ]),
-    //         delete : ["0#15#0"]
-    //     }
-    //   });
+    subscribe.next(no)
 }
 
+function onStopSubscribe() {
+    subscribe.unsubscribe();
+}
+
+function newSubscribe() {
+    // var ws = webSocket("ws://risk-websocket-server-rma-7x24.apps.dev-cefcfco.com/signalr");
+    var ws = webSocket("ws://localhost:8443/signalr"); 
+
+    ws.multiplex(() => [], () => [], message => message.type === 'SubscribeCustRisk')
+    .pipe(
+        bufferTime(200),
+        filter(m=> m.length>0),
+    )
+    .subscribe(res => {
+        updateGrid(res)
+    });
+    
+    return ws;
+}
 
 // after page is loaded, create the grid.
 document.addEventListener("DOMContentLoaded", function() {
